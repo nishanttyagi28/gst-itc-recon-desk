@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ITC Reconciliation Desk</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 60rem; padding: 0 1rem; color: #1a1a1a; }
+  h1 { font-size: 1.4rem; }
+  fieldset { border: 1px solid #ccc; margin-bottom: 1.5rem; padding: 1rem; }
+  label { display: block; margin: 0.5rem 0; }
+  button { padding: 0.4rem 1rem; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; }
+  th, td { border: 1px solid #ddd; padding: 0.35rem 0.6rem; text-align: left; }
+  th { background: #f4f4f4; }
+  .hidden { display: none; }
+  .error { color: #b00020; }
+  #download a { font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>ITC Reconciliation Desk</h1>
+
+<fieldset>
+  <legend>Upload</legend>
+  <form id="upload-form">
+    <label>Purchase register CSV <input type="file" id="books" accept=".csv" required></label>
+    <label>GSTR-2B CSV <input type="file" id="gstr2b" accept=".csv" required></label>
+    <button type="submit">Reconcile</button>
+  </form>
+  <p id="error" class="error hidden"></p>
+</fieldset>
+
+<div id="results" class="hidden">
+  <h2>Summary</h2>
+  <table id="summary-table">
+    <thead><tr><th>Category</th><th>Invoices</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p id="at-risk"></p>
+  <p id="download"><a id="download-link" href="#">Download Excel report</a></p>
+
+  <h2>Exceptions</h2>
+  <table id="exceptions-table">
+    <thead>
+      <tr>
+        <th>Category</th><th>Decision</th><th>Invoice</th><th>Portal invoice</th>
+        <th>Supplier GSTIN</th><th>Tax diff</th><th>Reason</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const form = document.getElementById("upload-form");
+const errorBox = document.getElementById("error");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  errorBox.classList.add("hidden");
+  const data = new FormData();
+  data.append("books", document.getElementById("books").files[0]);
+  data.append("gstr2b", document.getElementById("gstr2b").files[0]);
+  try {
+    const response = await fetch("/api/reconcile", { method: "POST", body: data });
+    if (!response.ok) {
+      const detail = (await response.json()).detail || response.statusText;
+      throw new Error(detail);
+    }
+    render(await response.json());
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.classList.remove("hidden");
+  }
+});
+
+function render(result) {
+  const tbody = document.querySelector("#summary-table tbody");
+  tbody.innerHTML = "";
+  const counts = result.summary.counts;
+  const categories = ["MATCHED", "AMOUNT_MISMATCH", "MISSING_IN_2B",
+                      "MISSING_IN_BOOKS", "GSTIN_MISMATCH"];
+  for (const category of categories) {
+    const row = tbody.insertRow();
+    row.insertCell().textContent = category;
+    row.insertCell().textContent = counts[category] || 0;
+  }
+  document.getElementById("at-risk").textContent =
+    "ITC at risk: Rs " + result.summary.itc_at_risk;
+  document.getElementById("download-link").href =
+    "/api/report/" + result.session_id;
+
+  const body = document.querySelector("#exceptions-table tbody");
+  body.innerHTML = "";
+  for (const e of result.exceptions) {
+    const row = body.insertRow();
+    row.insertCell().textContent = e.category;
+    row.insertCell().textContent = e.decision;
+    row.insertCell().textContent = e.invoice_no;
+    row.insertCell().textContent = e.portal_invoice_no;
+    row.insertCell().textContent = e.supplier_gstin;
+    row.insertCell().textContent = e.tax_diff;
+    row.insertCell().textContent = e.reason;
+  }
+  document.getElementById("results").classList.remove("hidden");
+}
+</script>
+</body>
+</html>

@@ -37,11 +37,16 @@ def _parse_row(row, line_no):
     }
 
 
-def _load(path):
+def _load(source):
+    """source is a path or an open text file (an upload is parsed from memory)."""
     rows = []
-    with open(path, newline="", encoding="utf-8") as f:
+    f = source if hasattr(source, "read") else open(source, newline="", encoding="utf-8")
+    try:
         for line_no, row in enumerate(csv.DictReader(f), start=2):
             rows.append(_parse_row(row, line_no))
+    finally:
+        if f is not source:
+            f.close()
     return rows
 
 
