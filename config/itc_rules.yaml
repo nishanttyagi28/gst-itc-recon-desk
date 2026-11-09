@@ -1,0 +1,13 @@
+# ITC decision rules. An accountant can edit these thresholds and actions.
+# Decisions: ALLOW (claim the credit), REVIEW (check manually), BLOCK (do not claim).
+
+# a tax difference (rupees) up to this size goes to REVIEW instead of BLOCK
+review_max_tax_diff: 10.00
+
+# what to do with each match category; AMOUNT_MISMATCH uses the threshold above
+actions:
+  MATCHED: ALLOW
+  AMOUNT_MISMATCH: threshold
+  MISSING_IN_2B: BLOCK
+  MISSING_IN_BOOKS: REVIEW
+  GSTIN_MISMATCH: REVIEW
