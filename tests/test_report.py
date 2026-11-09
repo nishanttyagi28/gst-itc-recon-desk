@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from datetime import date
 from decimal import Decimal
@@ -8,6 +10,8 @@ from recon.io import load_gstr2b, load_purchase_register
 from recon.matcher import reconcile
 from recon.rules import decide, load_config
 from recon.report import export_report
+
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 
 
 def book(invoice_no, gstin="27AAECS1234F1Z5", taxable="1000.00",
@@ -103,8 +107,8 @@ def test_export_report_with_full_sample_dataset(tmp_path, monkeypatch):
     # sanity check against the real sample data end to end
     monkeypatch.chdir(tmp_path)
     main(["run",
-          "--books", "C:/Users/Admin/gst-itc-recon-desk/data/purchase_register.csv",
-          "--gstr2b", "C:/Users/Admin/gst-itc-recon-desk/data/gstr2b.csv",
+          "--books", os.path.join(DATA_DIR, "purchase_register.csv"),
+          "--gstr2b", os.path.join(DATA_DIR, "gstr2b.csv"),
           "--out", "report.xlsx"])
     wb = load_workbook(tmp_path / "report.xlsx")
     ws = wb["Exceptions"]
