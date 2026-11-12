@@ -72,6 +72,17 @@ Run the tests with:
 python -m pytest -q
 ```
 
+## Run with Docker
+
+Build the image and start the web app:
+
+```bash
+docker build -t gst-itc-recon-desk .
+docker run --rm -p 8000:8000 gst-itc-recon-desk
+```
+
+Then open http://127.0.0.1:8000. The container listens on port 8000 by default, or on `$PORT` if that is set.
+
 ## Design decisions
 
 - **Plain dicts, no ORM or pandas.** Rows are dicts with `Decimal` amounts

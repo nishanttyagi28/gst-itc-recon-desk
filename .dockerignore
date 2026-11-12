@@ -1,0 +1,9 @@
+.git
+.github
+.gitignore
+.venv
+__pycache__
+*.py[cod]
+.pytest_cache
+*.xlsx
+docs/screenshots
