@@ -1,5 +1,7 @@
 # GST ITC Reconciliation Desk
 
+Live demo: https://gst-itc-recon-desk.vercel.app
+
 A small tool for an Indian SME's finance person: it compares the purchase
 register kept in the books against the GSTR-2B statement from the GST
 portal, shows every invoice that does not line up, and says whether input
