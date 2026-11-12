@@ -89,3 +89,10 @@ def test_report_download_is_a_workbook():
 
 def test_report_download_unknown_session():
     assert client.get("/api/report/nope").status_code == 404
+
+
+def test_healthz():
+    response = client.get("/healthz")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+

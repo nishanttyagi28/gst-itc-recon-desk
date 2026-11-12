@@ -89,3 +89,9 @@ def download_report(session_id: str):
         media_type=XLSX_MEDIA_TYPE,
         headers={"Content-Disposition": 'attachment; filename="itc-report.xlsx"'},
     )
+
+
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
+
